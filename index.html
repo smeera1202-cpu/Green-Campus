@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus Gardening & Green Space Management System</title>
+  
+  <!-- Modern Typography: Inter Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js CDN for Sustainability & Campus Metrics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Nature Design System CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Modern Role-Based Login Screen Overlay -->
+    <div class="login-screen-overlay hidden" id="login-screen-overlay">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="login-brand-icon">
+            <i class="fa-solid fa-leaf"></i>
+          </div>
+          <h2 class="login-title">BioCampus</h2>
+          <p class="login-subtitle">Smart Campus Gardening & Green Space System</p>
+        </div>
+
+        <!-- 3 Role Options Tabs -->
+        <div class="role-tabs-container" id="role-tabs-wrapper">
+          <button class="role-tab-btn active" data-role="Student" onclick="selectLoginRole('Student')">
+            <i class="fa-solid fa-graduation-cap" style="font-size:1.1rem;"></i>
+            <span>Student</span>
+          </button>
+          <button class="role-tab-btn" data-role="Staff" onclick="selectLoginRole('Staff')">
+            <i class="fa-solid fa-person-digging" style="font-size:1.1rem;"></i>
+            <span>Staff / Gardener</span>
+          </button>
+          <button class="role-tab-btn" data-role="Admin" onclick="selectLoginRole('Admin')">
+            <i class="fa-solid fa-user-shield" style="font-size:1.1rem;"></i>
+            <span>Admin</span>
+          </button>
+        </div>
+
+        <!-- Role Badge Header -->
+        <div style="text-align: center; margin-bottom: 1.2rem;">
+          <span class="badge badge-healthy" id="active-role-badge" style="font-size: 0.85rem; padding: 4px 14px;">
+            🎓 Student Portal Login
+          </span>
+        </div>
+
+        <!-- Error Alert Banner -->
+        <div class="login-error-alert" id="login-error-alert" style="display: none;">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="login-error-text">Invalid email or password.</span>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" onsubmit="handleLoginSubmit(event)">
+          <div class="login-field-group">
+            <label for="login-email"><i class="fa-solid fa-envelope"></i> Email Address / Campus ID</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-user field-icon"></i>
+              <input type="email" id="login-email" placeholder="student@smartcampus.com" required autocomplete="username">
+            </div>
+          </div>
+
+          <div class="login-field-group">
+            <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-key field-icon"></i>
+              <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" id="btn-toggle-pw">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="login-options-row">
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--text-main);">
+              <input type="checkbox" id="login-remember" checked> Keep me logged in
+            </label>
+            <a class="forgot-password-link" onclick="openForgotPasswordModal()">Forgot Password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-login-submit" style="width:100%; justify-content:center; padding:0.85rem; font-size:1rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Login to Portal
+          </button>
+        </form>
+
+        <!-- Quick Fill Demo Accounts -->
+        <div class="demo-accounts-box">
+          <div class="demo-accounts-title">⚡ Quick 1-Click Demo Accounts</div>
+          <div class="demo-pills-grid">
+            <button class="demo-pill-btn" onclick="fillDemoCredentials('student@smartcampus.com', 'Student@123', 'Student')">
+              <span>🎓 Student Demo</span>
+              <small>student@smartcampus.com</small>
+            </button>
+            <button class="demo-pill-btn" onclick="fillDemoCredentials('staff@smartcampus.com', 'Staff@123', 'Staff')">
+              <span>🧹 Staff Demo</span>
+              <small>staff@smartcampus.com</small>
+            </button>
+            <button class="demo-pill-btn" onclick="fillDemoCredentials('admin@smartcampus.com', 'Admin@123', 'Admin')">
+              <span>🛡️ Admin Demo</span>
+              <small>admin@smartcampus.com</small>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand-container">
+        <div class="brand-icon">
+          <i class="fa-solid fa-leaf"></i>
+        </div>
+        <div class="brand-text">
+          <h1>BioCampus</h1>
+          <span data-i18n="brand_subtitle">Smart Gardening</span>
+        </div>
+      </div>
+
+      <ul class="nav-menu" id="main-nav">
+        <li class="nav-item active" data-view="dashboard" id="nav-dashboard">
+          <a href="#dashboard"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="nav_dashboard">Dashboard</span></a>
+        </li>
+        <li class="nav-item" data-view="zones" id="nav-zones">
+          <a href="#zones"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="nav_zones">Zone Management</span></a>
+        </li>
+        <li class="nav-item" data-view="plants" id="nav-plants">
+          <a href="#plants"><i class="fa-solid fa-seedling"></i> <span data-i18n="nav_plants">Plant Inventory</span></a>
+        </li>
+        <li class="nav-item" data-view="maintenance" id="nav-maintenance">
+          <a href="#maintenance"><i class="fa-solid fa-list-check"></i> <span data-i18n="nav_maintenance">Maintenance Tasks</span></a>
+        </li>
+        <li class="nav-item" data-view="calendar" id="nav-calendar">
+          <a href="#calendar"><i class="fa-solid fa-calendar-days"></i> <span data-i18n="nav_calendar">Checklist Calendar</span></a>
+        </li>
+        <li class="nav-item" data-view="health" id="nav-health">
+          <a href="#health"><i class="fa-solid fa-heart-pulse"></i> <span data-i18n="nav_health">Plant Health & AI Scan</span></a>
+        </li>
+        <li class="nav-item" data-view="irrigation" id="nav-irrigation">
+          <a href="#irrigation"><i class="fa-solid fa-droplet"></i> <span data-i18n="nav_irrigation">Smart Irrigation & IoT</span></a>
+        </li>
+        <li class="nav-item" data-view="issues" id="nav-issues">
+          <a href="#issues"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="nav_issues">Reported Issues</span></a>
+        </li>
+        <li class="nav-item" data-view="sustainability" id="nav-sustainability">
+          <a href="#sustainability"><i class="fa-solid fa-tree"></i> <span data-i18n="nav_sustainability">Sustainability</span></a>
+        </li>
+        <li class="nav-item" data-view="biodiversity" id="nav-biodiversity">
+          <a href="#biodiversity"><i class="fa-solid fa-bugs"></i> <span data-i18n="nav_biodiversity">Biodiversity Tracker</span></a>
+        </li>
+        <li class="nav-item" data-view="volunteers" id="nav-volunteers">
+          <a href="#volunteers"><i class="fa-solid fa-hands-holding-child"></i> <span data-i18n="nav_volunteers">Student Hub & Rewards</span></a>
+        </li>
+        <li class="nav-item" data-view="users" id="nav-users">
+          <a href="#users"><i class="fa-solid fa-users-gear"></i> <span>User Management</span></a>
+        </li>
+        <li class="nav-item" data-view="notifications" id="nav-notifications">
+          <a href="#notifications"><i class="fa-solid fa-bell"></i> <span data-i18n="nav_notifications">Notifications</span></a>
+        </li>
+        <li class="nav-item" data-view="settings" id="nav-settings">
+          <a href="#settings"><i class="fa-solid fa-sliders"></i> <span data-i18n="nav_settings">Settings & API</span></a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-avatar" id="user-avatar">E</div>
+          <div class="user-details">
+            <h4 id="user-display-name">Dr. Eleanor Vance</h4>
+            <p id="user-display-role">Admin / Green Committee</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Sticky Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <h2 class="page-title" id="page-title-text">Dashboard Overview</h2>
+        </div>
+
+        <div class="header-right">
+          <!-- Gardening Guide Button -->
+          <button class="btn btn-secondary btn-sm" id="btn-open-guide" onclick="openModal('gardening-guide-modal')" title="Campus Gardening Handbook">
+            <i class="fa-solid fa-book-open" style="color:#10b981;"></i> <span data-i18n="btn_gardening_guide">Gardening Guide</span>
+          </button>
+
+          <!-- Multilingual Language Selector (Includes Tamil தமிழ்) -->
+          <div class="role-switcher" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3);">
+            <i class="fa-solid fa-globe" style="color:#3b82f6;"></i>
+            <select id="lang-select">
+              <option value="en">English 🇺🇸</option>
+              <option value="ta">தமிழ் 🇮🇳</option>
+              <option value="es">Español 🇪🇸</option>
+              <option value="fr">Français 🇫🇷</option>
+              <option value="hi">Hindi 🇮🇳</option>
+              <option value="de">Deutsch 🇩🇪</option>
+            </select>
+          </div>
+
+          <!-- Role Switcher -->
+          <div class="role-switcher">
+            <i class="fa-solid fa-user-gear"></i>
+            <label for="role-select" data-i18n="lbl_role">Role:</label>
+            <select id="role-select">
+              <option value="Admin">Admin / Green Committee</option>
+              <option value="Gardening Staff">Gardening Staff</option>
+              <option value="Student Volunteer">Student Volunteer</option>
+            </select>
+          </div>
+
+          <!-- Report Issue Header Button -->
+          <button class="btn btn-danger btn-sm" id="btn-header-report-issue" onclick="openModal('issue-modal')" title="Report Green Issue">
+            <i class="fa-solid fa-circle-exclamation"></i> <span data-i18n="btn_report_issue">Report Issue</span>
+          </button>
+
+          <!-- Logout Button -->
+          <button class="btn btn-secondary btn-sm" id="btn-header-logout" onclick="handleLogout()" title="Logout of Account" style="border-color: rgba(244, 63, 94, 0.3); color: #f43f5e;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button class="icon-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+
+          <!-- Notifications Bell -->
+          <button class="icon-btn" id="nav-notif-btn" title="Notifications">
+            <i class="fa-solid fa-bell"></i>
+            <span class="badge-counter" id="unread-notif-badge">0</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Body Area (Dynamic Render Target) -->
+      <main class="content-body" id="main-content-view">
+        <!-- Dynamic views will render here via app.js -->
+      </main>
+    </div>
+  </div>
+
+  <!-- FLOATING AI GREEN ASSISTANT CHATBOT WIDGET -->
+  <div id="flora-ai-widget" class="chatbot-widget">
+    <div class="chatbot-window" id="chatbot-window">
+      <div class="chatbot-header">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <i class="fa-solid fa-robot" style="font-size:1.2rem; color:#a7f3d0;"></i>
+          <div>
+            <h4 style="color:#ffffff; font-size:0.95rem; font-weight:700;">FloraAI Assistant</h4>
+            <span style="font-size:0.7rem; color:#6ee7b7;">Smart Campus Flora AI</span>
+          </div>
+        </div>
+        <button class="close-btn" style="color:#ffffff;" onclick="toggleChatbot()">&times;</button>
+      </div>
+
+      <div class="chatbot-body" id="chatbot-messages">
+        <div class="chat-msg bot" id="chat-welcome-msg">
+          👋 Hello! I am <strong>FloraAI</strong>. Ask me about live campus soil moisture, plant care guidelines, maintenance schedules, or volunteer rewards!
+        </div>
+      </div>
+
+      <div class="chatbot-pills">
+        <span onclick="sendChatPill('Check soil moisture levels')" data-i18n="pill_moisture">💧 Soil Moisture</span>
+        <span onclick="sendChatPill('Show plant inventory stats')" data-i18n="pill_stats">🌱 Plant Stats</span>
+        <span onclick="sendChatPill('How to earn volunteer points?')" data-i18n="pill_rewards">🏆 Rewards Info</span>
+      </div>
+
+      <div class="chatbot-input">
+        <input type="text" id="chat-input-text" placeholder="Ask FloraAI..." onkeypress="handleChatEnter(event)">
+        <button id="btn-send-chat" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+          <button class="chatbot-trigger" id="chatbot-trigger-btn" onclick="toggleChatbot()" title="Ask FloraAI Campus Assistant">
+      <i class="fa-solid fa-robot"></i>
+    </button>
+  </div>
+
+  <!-- Smart Plant Replacement Recommendation Modal -->
+  <div class="modal-backdrop" id="replacement-modal">
+    <div class="modal-card" style="max-width: 820px; width: 95%; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-arrows-rotate" style="color:#10b981;"></i> <span data-i18n="smart_plant_replacement">Smart Plant Replacement Recommendation</span></h3>
+        <button class="close-btn" onclick="closeModal('replacement-modal')">&times;</button>
+      </div>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:1.2rem;">
+        
+        <!-- Target Location & Soil Environmental Analysis Card -->
+        <div id="replacement-env-analysis-card" style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.25); padding: 1rem; border-radius: 12px;">
+          <!-- Dynamically populated by JS -->
+        </div>
+
+        <!-- Recommended Plants List -->
+        <div>
+          <h4 style="font-size: 1.05rem; font-weight:700; margin-bottom: 0.75rem; color: var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+            <i class="fa-solid fa-award" style="color:#10b981;"></i>
+            <span data-i18n="recommended_plants">Top Recommended Replacement Plants</span>
+          </h4>
+          <div id="replacement-candidates-container" style="display:flex; flex-direction:column; gap:1rem;">
+            <!-- Candidate cards dynamically rendered -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Modal -->
+  
+  <!-- Campus Gardening Handbook Modal -->
+  <div class="modal-backdrop" id="gardening-guide-modal">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-book-open" style="color:#10b981;"></i> <span data-i18n="guide_title">Campus Gardening & Organic Care Handbook</span></h3>
+        <button class="close-btn" onclick="closeModal('gardening-guide-modal')">&times;</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:1rem; font-size:0.88rem;">
+        <div style="background:var(--primary-50); padding:1rem; border-radius:10px; border-left:4px solid #10b981;">
+          <h4 style="color:#047857; margin-bottom:0.4rem;" data-i18n="guide_sec1_title">🌳 1. Campus Tree & Shrub Watering Guidelines</h4>
+          <p data-i18n="guide_sec1_desc">Drip irrigation should be activated early morning (6:00 - 8:00 AM) to minimize evaporation. Maintain soil moisture levels between 40% and 65% for optimal root aeration.</p>
+        </div>
+
+        <div style="background:rgba(59, 130, 246, 0.08); padding:1rem; border-radius:10px; border-left:4px solid #3b82f6;">
+          <h4 style="color:#1d4ed8; margin-bottom:0.4rem;" data-i18n="guide_sec2_title">✂️ 2. Pruning & Canopy Management</h4>
+          <p data-i18n="guide_sec2_desc">Prune dead or diseased branches quarterly. Cut at a 45-degree angle 1/4 inch above healthy buds to encourage outward foliage growth.</p>
+        </div>
+
+        <div style="background:rgba(245, 158, 11, 0.08); padding:1rem; border-radius:10px; border-left:4px solid #f59e0b;">
+          <h4 style="color:#b45309; margin-bottom:0.4rem;" data-i18n="guide_sec3_title">🌿 3. Organic Pest Control (Neem Spray Recipe)</h4>
+          <p data-i18n="guide_sec3_desc">Mix 5 ml of cold-pressed organic Neem oil and 2 ml of eco liquid soap in 1 Liter of warm water. Spray thoroughly on infected leaves to eliminate aphids and spider mites.</p>
+        </div>
+      </div>
+      <div style="margin-top: 1.5rem; text-align: right;">
+        <button class="btn btn-secondary" onclick="closeModal('gardening-guide-modal')">Close Manual</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Plant Biography Modal -->
+  <div class="modal-backdrop" id="qr-modal">
+    <div class="modal-card" style="max-width: 520px; text-align: center;">
+      <div class="modal-header">
+        <h3 id="qr-modal-title">Plant QR Biography & Pass</h3>
+        <button class="close-btn" onclick="closeModal('qr-modal')">&times;</button>
+      </div>
+      <div id="qr-modal-body">
+        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+      </div>
+      <div style="margin-top: 1.5rem; text-align: right;">
+        <button class="btn btn-secondary" onclick="closeModal('qr-modal')">Close</button>
+        <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print QR Tag</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Plant Disease Health Scanner Modal -->
+  <div class="modal-backdrop" id="ai-scanner-modal">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-virus-slash" style="color:#10b981;"></i> AI Plant Health & Disease Scanner</h3>
+        <button class="close-btn" onclick="closeModal('ai-scanner-modal')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Select Campus Plant to Scan</label>
+        <select id="scan-plant-select" class="select-filter" style="width:100%;"></select>
+      </div>
+      <div class="form-group">
+        <label>Upload Leaf Sample Photo / Camera Feed</label>
+        <input type="url" id="scan-photo-url" class="input-search" value="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=600" style="width:100%;">
+      </div>
+      <button class="btn btn-primary" id="btn-run-ai-scan" style="width:100%; justify-content:center; margin-top:0.5rem;" onclick="runAIPlantScan()">
+        <i class="fa-solid fa-microscope"></i> Run AI Disease Analysis
+      </button>
+
+      <div id="scan-result-container" style="margin-top:1.25rem; display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Report Issue Modal -->
+  <div class="modal-backdrop" id="issue-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color:#f43f5e;"></i> Report Campus Green Issue</h3>
+        <button class="close-btn" onclick="closeModal('issue-modal')">&times;</button>
+      </div>
+      <form id="issue-form">
+        <div class="form-group">
+          <label>Issue Title</label>
+          <input type="text" id="issue-title-input" placeholder="e.g. Broken Sprinkler Valve near Quad" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label>Campus Zone</label>
+            <select id="issue-zone-input" required></select>
+          </div>
+          <div class="form-group">
+            <label>Issue Type</label>
+            <select id="issue-type-input">
+              <option value="Water Leakage">Water Leakage</option>
+              <option value="Branch Damage">Branch Damage</option>
+              <option value="Pest Infestation">Pest Infestation</option>
+              <option value="Soil Erosion">Soil Erosion</option>
+              <option value="Vandalism">Vandalism / Trash</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label>Urgency Priority</label>
+            <select id="issue-priority-input">
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Reporter Name</label>
+            <input type="text" id="issue-reporter-input" value="Aarav Sharma" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Issue Description</label>
+          <textarea id="issue-desc-input" rows="3" placeholder="Describe problem details..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Photo Proof URL</label>
+          <input type="url" id="issue-photo-input" value="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600">
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('issue-modal')">Cancel</button>
+          <button type="submit" class="btn btn-danger" id="btn-submit-issue"><i class="fa-solid fa-paper-plane"></i> Submit Issue Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add/Edit Zone Modal -->
+  <div class="modal-backdrop" id="zone-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="zone-modal-title">Add New Campus Zone</h3>
+        <button class="close-btn" onclick="closeModal('zone-modal')">&times;</button>
+      </div>
+      <form id="zone-form">
+        <input type="hidden" id="zone-id-input">
+        <div class="form-group">
+          <label>Zone Name</label>
+          <input type="text" id="zone-name-input" placeholder="e.g. Science Complex Lawn" required>
+        </div>
+        <div class="form-group">
+          <label>Location Description</label>
+          <input type="text" id="zone-location-input" placeholder="e.g. Behind Physics Block" required>
+        </div>
+        <div class="form-group">
+          <label>Total Area (sq. meters)</label>
+          <input type="number" step="0.1" id="zone-area-input" placeholder="3500" required>
+        </div>
+        <div class="form-group">
+          <label>Green Cover Percentage (%)</label>
+          <input type="number" step="0.1" id="zone-green-input" placeholder="85.0" required>
+        </div>
+        <div class="form-group">
+          <label>Overall Health Status</label>
+          <select id="zone-health-input">
+            <option value="Healthy">Healthy</option>
+            <option value="Needs Attention">Needs Attention</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('zone-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Zone</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add/Edit Plant Modal -->
+  <div class="modal-backdrop" id="plant-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="plant-modal-title">Add New Plant to Inventory</h3>
+        <button class="close-btn" onclick="closeModal('plant-modal')">&times;</button>
+      </div>
+      <form id="plant-form">
+        <input type="hidden" id="plant-id-input">
+        <div class="form-group">
+          <label>Plant Common Name</label>
+          <input type="text" id="plant-name-input" placeholder="e.g. Royal Jasmine Bush" required>
+        </div>
+        <div class="form-group">
+          <label>Botanical Species Name</label>
+          <input type="text" id="plant-species-input" placeholder="e.g. Jasminum grandiflorum" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label>Plant Type</label>
+            <select id="plant-type-input">
+              <option value="Tree">Tree</option>
+              <option value="Shrub">Shrub</option>
+              <option value="Flowering Tree">Flowering Tree</option>
+              <option value="Palm">Palm</option>
+              <option value="Ground Cover">Ground Cover</option>
+              <option value="Medicinal Herb">Medicinal Herb</option>
+              <option value="Bamboo">Bamboo</option>
+              <option value="Climber">Climber</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Campus Zone</label>
+            <select id="plant-zone-input" required></select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label>Planted Date</label>
+            <input type="date" id="plant-date-input" required>
+          </div>
+          <div class="form-group">
+            <label>Health Status</label>
+            <select id="plant-health-input">
+              <option value="Healthy">Healthy</option>
+              <option value="Needs Attention">Needs Attention</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Photo URL (Optional)</label>
+          <input type="url" id="plant-photo-input" placeholder="https://images.unsplash.com/...">
+        </div>
+        <div class="form-group">
+          <label>Notes & Recommendations</label>
+          <textarea id="plant-notes-input" rows="3" placeholder="Enter care instructions or notes..."></textarea>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('plant-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Plant</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create Task Modal -->
+  <div class="modal-backdrop" id="task-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create Maintenance Task</h3>
+        <button class="close-btn" onclick="closeModal('task-modal')">&times;</button>
+      </div>
+      <form id="task-form">
+        <div class="form-group">
+          <label>Task Type</label>
+          <select id="task-type-input" required>
+            <option value="Watering">Watering</option>
+            <option value="Pruning">Pruning</option>
+            <option value="Fertilizing">Fertilizing</option>
+            <option value="Weeding">Weeding</option>
+            <option value="Pest Control">Pest Control</option>
+            <option value="General Maintenance">General Maintenance</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label>Target Zone</label>
+            <select id="task-zone-input" required></select>
+          </div>
+          <div class="form-group">
+            <label>Specific Plant (Optional)</label>
+            <select id="task-plant-input"></select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label>Assigned Staff</label>
+            <input type="text" id="task-staff-input" value="Rajesh Kumar" required>
+          </div>
+          <div class="form-group">
+            <label>Priority Level</label>
+            <select id="task-priority-input">
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Scheduled Date</label>
+          <input type="date" id="task-date-input" required>
+        </div>
+        <div class="form-group">
+          <label>Task Notes / Instructions</label>
+          <textarea id="task-notes-input" rows="2" placeholder="Task specifics..."></textarea>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('task-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Complete Task Modal (With Photo Proof Upload) -->
+  <div class="modal-backdrop" id="complete-task-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Mark Task as Completed</h3>
+        <button class="close-btn" onclick="closeModal('complete-task-modal')">&times;</button>
+      </div>
+      <form id="complete-task-form">
+        <input type="hidden" id="complete-task-id-input">
+        <div class="form-group">
+          <label>Completion Notes</label>
+          <textarea id="complete-task-notes" rows="3" placeholder="Describe work done..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Upload Photo Proof URL / Sample</label>
+          <input type="url" id="complete-task-photo" value="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600" required>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('complete-task-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-task-complete"><i class="fa-solid fa-circle-check"></i> Submit Completion</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Update Plant Health Observation Modal -->
+  <div class="modal-backdrop" id="health-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Update Plant Health Observation</h3>
+        <button class="close-btn" onclick="closeModal('health-modal')">&times;</button>
+      </div>
+      <form id="health-form">
+        <input type="hidden" id="health-plant-id">
+        <div class="form-group">
+          <label>Plant Code & Name</label>
+          <input type="text" id="health-plant-name" readonly style="background: rgba(0,0,0,0.05);">
+        </div>
+        <div class="form-group">
+          <label>New Health Status</label>
+          <select id="health-status-select" required>
+            <option value="Healthy">Healthy</option>
+            <option value="Needs Attention">Needs Attention</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Observation Remarks</label>
+          <textarea id="health-observation-text" rows="3" placeholder="E.g. Mild leaf discoloration noted near base..." required></textarea>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('health-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Update Health</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Volunteer Activity Registration/Claim Modal -->
+  <div class="modal-backdrop" id="volunteer-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Log Student Volunteer Activity</h3>
+        <button class="close-btn" onclick="closeModal('volunteer-modal')">&times;</button>
+      </div>
+      <form id="volunteer-form">
+        <div class="form-group">
+          <label>Activity Title</label>
+          <input type="text" id="vol-title-input" placeholder="e.g. Tree Plantation Drive" required>
+        </div>
+        <div class="form-group">
+          <label>Student Volunteer Name</label>
+          <input type="text" id="vol-name-input" value="Aarav Sharma" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label>Campus Zone</label>
+            <select id="vol-zone-input" required></select>
+          </div>
+          <div class="form-group">
+            <label>Claim Points</label>
+            <input type="number" id="vol-points-input" value="100" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Activity Description & Impact</label>
+          <textarea id="vol-desc-input" rows="2" placeholder="Detail your green contribution..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Photo Proof URL</label>
+          <input type="url" id="vol-photo-input" value="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600">
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('volunteer-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-trophy"></i> Submit Activity</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Forgot Password Reset Modal -->
+  <div class="modal-backdrop" id="forgot-password-modal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-key" style="color:#10b981;"></i> Password Reset Request</h3>
+        <button class="close-btn" onclick="closeModal('forgot-password-modal')">&times;</button>
+      </div>
+      <form id="forgot-password-form" onsubmit="handleForgotPasswordSubmit(event)">
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+          Enter your registered BioCampus email address. We will send a secure password reset authorization code to your inbox.
+        </p>
+        <div class="form-group">
+          <label><i class="fa-solid fa-envelope"></i> Registered Email Address</label>
+          <input type="email" id="forgot-email-input" placeholder="e.g. student@smartcampus.com" required>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('forgot-password-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Send Reset Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Core Frontend Script -->
+  <script src="app.js"></script>
+</body>
+</html>
